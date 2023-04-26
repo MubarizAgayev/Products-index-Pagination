@@ -1,7 +1,8 @@
-﻿@model IEnumerable<Category>
+﻿@model Paginate<CategoryListVM>
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    int count = (Model.Datas.Count()*(Model.CurrentPage-1)) + 1;
 }
 
 <div class="container" style="margin-left:300px;margin-top:100px">
@@ -10,14 +11,18 @@
     <table class="table">
         <thead>
             <tr>
+                <th scope="col">#</th>
                 <th scope="col">Name</th>
                 <th scope="col">Operations</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var category in Model)
+            @foreach (var category in Model.Datas)
             {
                 <tr>
+                    <th>
+                        @count
+                    </th>
                     <th>
                         @Html.Raw(category.Name)
                     </th>
@@ -29,8 +34,23 @@
                         </form>
                     </td>
                 </tr>
+                count++;
             }
         </tbody>
     </table>
+    <nav aria-label="Page navigation example" style="margin-left:400px;">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.HasPrevius? "":"disabled")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage-1)" tabindex="-1">Previous</a>
+            </li>
+            @for (int i = 1; i <= Model.TotalPage; i++)
+            {
+                <li class="page-item @(Model.CurrentPage == i ? "disabled":"")"><a class="page-link" asp-action="Index" asp-route-page="@i">@i</a></li>
+            }
+            <li class="page-item @(Model.HasNext? "":"disabled")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage+1)">Next</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 

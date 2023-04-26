@@ -1,7 +1,11 @@
-﻿using EntityFramework_Slider.Data;
+﻿using EntityFramework_Slider.Areas.Admin.ViewModels;
+using EntityFramework_Slider.Data;
+using EntityFramework_Slider.Helpers;
 using EntityFramework_Slider.Models;
+using EntityFramework_Slider.Services;
 using EntityFramework_Slider.Services.interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
 
@@ -17,9 +21,38 @@ namespace EntityFramework_Slider.Areas.Admin.Controllers
             _categoryService = categoryService;
             _context = context;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int take = 4)
         {
-            return View(await _categoryService.GetAll());
+            List<Category> categories = await _categoryService.GetPaginatedDatas(page, take);
+
+            List<CategoryListVM> mappedDatas = GetMappedDatas(categories);
+
+            int pageCount = await GetPageCountAsync(take);
+
+            Paginate<CategoryListVM> paginatedDatas = new(mappedDatas, page, pageCount);
+            return View(paginatedDatas);
+        }
+
+        private async Task<int> GetPageCountAsync(int take)
+        {
+            var categoryCount = await _categoryService.GetCountAsync();
+            return (int)Math.Ceiling((decimal)categoryCount / take);
+        }
+
+        private List<CategoryListVM> GetMappedDatas(List<Category> categories)
+        {
+            List<CategoryListVM> mappedDatas = new();
+            foreach (Category category in categories)
+            {
+                CategoryListVM categoryVM = new()
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                };
+
+                mappedDatas.Add(categoryVM);
+            }
+            return mappedDatas;
         }
 
         [HttpGet]

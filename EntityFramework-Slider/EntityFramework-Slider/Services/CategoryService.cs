@@ -16,5 +16,15 @@ namespace EntityFramework_Slider.Services
         {
             return await _context.Categories.ToListAsync();
         }
+
+        public async Task<int> GetCountAsync()
+        {
+            return await _context.Categories.CountAsync();
+        }
+
+        public async Task<List<Category>> GetPaginatedDatas(int page, int take)
+        {
+            return await _context.Categories.Skip((page * take) - take).Take(take).ToListAsync();
+        }
     }
 }
